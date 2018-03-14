@@ -7,7 +7,8 @@ import com.hwy.handle.ExcelHandle;
 import com.hwy.model.RowCol;
 import com.hwy.uitl.StringUtil;
 import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 /**
@@ -30,12 +31,15 @@ public class WorkbookCreateHandle implements ExcelHandle {
     private void createWorkbook() {
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("sheet1");
-        createHeader(sheet);
-        createData(sheet);
+        HSSFCellStyle style = workbook.createCellStyle();
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        createHeader(sheet, style);
+        createData(sheet, style);
         result.setWorkbook(workbook);
     }
 
-    private void createHeader(HSSFSheet sheet) {
+    private void createHeader(HSSFSheet sheet, HSSFCellStyle style) {
         HSSFRow row;
         HSSFCell cell;
         RowCol rowCol = result.getHeaderRowCol();
@@ -48,6 +52,7 @@ public class WorkbookCreateHandle implements ExcelHandle {
                 cell = row.createCell(j);
                 if (isHeaderAvailable(headers[i][j])) {
                     cell.setCellValue(headers[i][j].getName());
+                    cell.setCellStyle(style);
                 }
             }
         }
@@ -75,7 +80,7 @@ public class WorkbookCreateHandle implements ExcelHandle {
         return header.getRow() > 1 || header.getCol() > 1;
     }
 
-    private void createData(HSSFSheet sheet) {}
+    private void createData(HSSFSheet sheet, HSSFCellStyle style) {}
 
     private boolean isHeaderAvailable(ExcelHeader header) {
         return null != header
