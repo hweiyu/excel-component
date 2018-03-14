@@ -14,9 +14,13 @@ import java.io.IOException;
  **/
 public class ExcelTest {
     public static void main(String[] args) throws IOException {
-        ExcelExportService excelService = new ExcelExportServiceImpl();
-        ExcelResult result = excelService.export(TestData.class, null);
-        result.getWorkbook().write(new FileOutputStream("D:/test.xls"));
+        try (FileOutputStream out = new FileOutputStream("D:/test.xls")) {
+            ExcelExportService excelService = new ExcelExportServiceImpl();
+            ExcelResult result = excelService.export(TestData.class, null);
+            result.getWorkbook().write(out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.out.println();
     }
 }
