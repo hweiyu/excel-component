@@ -90,6 +90,7 @@ public class DataAssembleHandle implements ExcelHandle {
     private void mergeRow(RowCol rowCol, ExcelHeader[][] headers) {
         Set<String> nameSet;
         Map<String, Integer> count;
+        String key;
         boolean added;
         int row = rowCol.getRow();
         int col = rowCol.getCol();
@@ -99,17 +100,27 @@ public class DataAssembleHandle implements ExcelHandle {
             //计算每个名称出现次数
             for (int j = 0; j < col; j++) {
                 if (!isHeaderEmpty(headers[i][j])) {
-                    added = nameSet.add(headers[i][j].getName());
-                    count.put(headers[i][j].getName(), added ? 1 : count.get(headers[i][j].getName()) + 1);
+                    key = getVerticalName(i, j, headers);
+                    added = nameSet.add(key);
+                    count.put(key, added ? 1 : count.get(key) + 1);
                 }
             }
             //设置每个名称占的列数
             for (int j = 0; j < col; j++) {
                 if (!isHeaderEmpty(headers[i][j])) {
-                    headers[i][j].setCol(count.get(headers[i][j].getName()));
+                    key = getVerticalName(i, j, headers);
+                    headers[i][j].setCol(count.get(key));
                 }
             }
         }
+    }
+
+    private String getVerticalName(int row, int col, ExcelHeader[][] headers) {
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i <= row; i++) {
+            buf.append("|").append(headers[i][col].getName());
+        }
+        return buf.substring(1);
     }
 
     private void mergeCol(RowCol rowCol, ExcelHeader[][] headers) {
@@ -134,8 +145,12 @@ public class DataAssembleHandle implements ExcelHandle {
             for (int j = 0; j < col; j++) {
                 if (!isHeaderEmpty(headers[i][j])) {
                     int preIndex = j - 1;
-                    if (preIndex >= 0 && isHeaderEquals(headers[i][preIndex], headers[i][j])) {
-                        headers[i][j].setAvailable(false);
+                    if (preIndex >= 0
+                            && !isHeaderEmpty(headers[i][preIndex])
+                            && !isHeaderEmpty(headers[i][j])) {
+                        String preVerticalName = getVerticalName(i, preIndex, headers);
+                        String curVerticalName = getVerticalName(i, j, headers);
+                        headers[i][j].setAvailable(!preVerticalName.equals(curVerticalName));
                     }
                 }
             }
@@ -152,13 +167,27 @@ public class DataAssembleHandle implements ExcelHandle {
         return null == excelHeader || StringUtil.isEmpty(excelHeader.getName());
     }
 
-    private boolean isHeaderEquals(ExcelHeader header1, ExcelHeader header2) {
-        if (isHeaderEmpty(header1) || isHeaderEmpty(header2)) {
-            return false;
-        }
-        return header1.getName().equals(header2.getName());
+    private void assembleDatas() {
+        Map<String, Integer> headerMap = getHeaderIndexMap();
+        Map<String, String> fieldMap = param.getFieldMap();
+
     }
 
-    private void assembleDatas() {}
+    private Map<String, Integer> getHeaderIndexMap() {
+        Map<String, Integer> headerMap = new HashMap<>();
+        List<ExcelOriginHeader> originHeaders = param.getOriginHeaders();
+        int len = originHeaders.size();
+        for (int i = 0; i < len; i++) {
+            headerMap.put(join(originHeaders.get(i).getName()), i);
+        }
+        return headerMap;
+    }
 
+    private String join(List<String> list) {
+        StringBuilder buf = new StringBuilder();
+        for (String s : list) {
+            buf.append("|").append(s);
+        }
+        return buf.substring(1);
+    }
 }

@@ -20,6 +20,7 @@ public class ExcelParamFactory {
     public ExcelParam create(Class cls, List<? extends BaseExcelData> datas) {
         param = new ExcelParam();
         setOriginHeaders(cls);
+        setFieldMap(cls);
         setOriginDatas(datas);
         return param;
     }
@@ -56,5 +57,17 @@ public class ExcelParamFactory {
             }
         }
         return originHeaders;
+    }
+
+    private void setFieldMap(Class cls) {
+        Field[] fields = cls.getDeclaredFields();
+        Map<String, String> fieldMap = new HashMap<>();
+        for (Field field : fields) {
+            Header header = field.getAnnotation(Header.class);
+            if (null != header) {
+                fieldMap.put(header.name(), field.getName());
+            }
+        }
+        param.setFieldMap(fieldMap);
     }
 }

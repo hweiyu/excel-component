@@ -7,9 +7,11 @@ import com.hwy.handle.ExcelHandle;
 import com.hwy.model.RowCol;
 import com.hwy.uitl.StringUtil;
 import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
+
 
 /**
  * @author huangweiyu
@@ -31,12 +33,28 @@ public class WorkbookCreateHandle implements ExcelHandle {
     private void createWorkbook() {
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("sheet1");
+        createHeader(sheet, getHeaderStyle(workbook));
+        createData(sheet, getDataStyle(workbook));
+        result.setWorkbook(workbook);
+    }
+
+    private HSSFCellStyle getHeaderStyle(HSSFWorkbook workbook) {
+        HSSFCellStyle style = getDataStyle(workbook);
+        HSSFFont font = workbook.createFont();
+        font.setBold(true);
+        style.setFont(font);
+        style.setBorderTop(BorderStyle.MEDIUM);
+        style.setBorderBottom(BorderStyle.MEDIUM);
+        style.setBorderLeft(BorderStyle.MEDIUM);
+        style.setBorderRight(BorderStyle.MEDIUM);
+        return style;
+    }
+
+    private HSSFCellStyle getDataStyle(HSSFWorkbook workbook) {
         HSSFCellStyle style = workbook.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setVerticalAlignment(VerticalAlignment.CENTER);
-        createHeader(sheet, style);
-        createData(sheet, style);
-        result.setWorkbook(workbook);
+        return style;
     }
 
     private void createHeader(HSSFSheet sheet, HSSFCellStyle style) {
@@ -50,9 +68,9 @@ public class WorkbookCreateHandle implements ExcelHandle {
             row = sheet.createRow(i);
             for (int j = 0; j < c; j++) {
                 cell = row.createCell(j);
+                cell.setCellStyle(style);
                 if (isHeaderAvailable(headers[i][j])) {
                     cell.setCellValue(headers[i][j].getName());
-                    cell.setCellStyle(style);
                 }
             }
         }
@@ -80,11 +98,14 @@ public class WorkbookCreateHandle implements ExcelHandle {
         return header.getRow() > 1 || header.getCol() > 1;
     }
 
-    private void createData(HSSFSheet sheet, HSSFCellStyle style) {}
-
     private boolean isHeaderAvailable(ExcelHeader header) {
         return null != header
                 && StringUtil.isNotEmpty(header.getName())
                 && header.isAvailable();
     }
+
+    private void createData(HSSFSheet sheet, HSSFCellStyle style) {
+
+    }
+
 }

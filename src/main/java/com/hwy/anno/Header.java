@@ -16,4 +16,6 @@ public @interface Header {
     String name() default "";
 
     int sort() default 0;
+
+    String method() default "";
 }

@@ -1,6 +1,7 @@
 package com.hwy.model;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author huangweiyu
@@ -13,6 +14,8 @@ public class ExcelParam {
     private List<ExcelOriginHeader> originHeaders;
 
     private List<? extends BaseExcelData> originDatas;
+
+    private Map<String, String> FieldMap;
 
     private ExcelFooter footer;
 
@@ -50,4 +53,11 @@ public class ExcelParam {
         this.originHeaders = originHeaders;
     }
 
+    public Map<String, String> getFieldMap() {
+        return FieldMap;
+    }
+
+    public void setFieldMap(Map<String, String> fieldMap) {
+        FieldMap = fieldMap;
+    }
 }
