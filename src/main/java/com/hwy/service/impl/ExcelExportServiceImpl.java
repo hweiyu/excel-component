@@ -22,22 +22,7 @@ public class ExcelExportServiceImpl implements ExcelExportService {
     public ExcelResult export(Class cls, List<? extends BaseExcelData> datas) {
         ExcelParam param = new ExcelParamFactory().create(cls, datas);
         ExcelResult result = new ExcelResult();
-        return doHanldeChain(param, result);
-    }
-
-    private ExcelResult doHanldeChain(ExcelParam param, ExcelResult result) {
-        new DataAssembleHandle(param, result).handle();
-        new DataValidatorHandle(param, result).handle();
-        new WorkbookCreateHandle(param, result).handle();
-        return result;
-//        return getChain()
-//                .addHandle(new DataAssembleHandle(param, result))
-//                .addHandle(new DataValidatorHandle(param, result))
-//                .addHandle(new WorkbookCreateHandle(param, result))
-//                .doHandles(param, result);
-    }
-
-    private ExcelHandleChain getChain() {
-        return new ExcelHandleChain();
+        ExcelHandleChain chain = new ExcelHandleChain(param, result);
+        return chain.result();
     }
 }
