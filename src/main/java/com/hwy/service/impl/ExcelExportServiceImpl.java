@@ -5,9 +5,6 @@ import com.hwy.model.BaseExcelData;
 import com.hwy.model.ExcelParam;
 import com.hwy.model.ExcelResult;
 import com.hwy.handle.ExcelHandleChain;
-import com.hwy.handle.impl.DataAssembleHandle;
-import com.hwy.handle.impl.DataValidatorHandle;
-import com.hwy.handle.impl.WorkbookCreateHandle;
 import com.hwy.service.ExcelExportService;
 
 import java.util.List;
@@ -18,10 +15,19 @@ import java.util.List;
  **/
 public class ExcelExportServiceImpl implements ExcelExportService {
 
+    /**
+     * excel导出功能
+     * @param cls 实现bean，要求实现 com.hwy.model.BaseExcelData
+     * @param datas 数据
+     * @return
+     */
     @Override
     public ExcelResult export(Class cls, List<? extends BaseExcelData> datas) {
+        //封装参数
         ExcelParam param = new ExcelParamFactory().create(cls, datas);
+        //封装返回
         ExcelResult result = new ExcelResult();
+        //责任链处理，返回结果
         ExcelHandleChain chain = new ExcelHandleChain(param, result);
         return chain.result();
     }

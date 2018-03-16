@@ -5,21 +5,40 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import java.util.List;
 
 /**
+ * 返回结果类
  * @author huangweiyu
  * @date 2018/3/13 10:27
  **/
 public class ExcelResult {
 
+    /**
+     * 描述信息
+     */
     private String message;
 
+    /**
+     * 返回结果 true:成功，false:失败
+     */
     private String result;
 
+    /**
+     * 表头所占的行列
+     */
     private RowCol headerRowCol;
 
+    /**
+     * 表头二维矩阵
+     */
     private ExcelHeader[][] headers;
 
+    /**
+     * 数据
+     */
     private List<List<String>> datas;
 
+    /**
+     * excel工作薄
+     */
     private HSSFWorkbook workbook;
 
     public ExcelResult() {

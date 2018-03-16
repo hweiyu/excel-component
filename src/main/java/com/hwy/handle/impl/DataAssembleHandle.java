@@ -1,12 +1,18 @@
 package com.hwy.handle.impl;
 
+import com.hwy.anno.Header;
 import com.hwy.model.*;
 import com.hwy.handle.ExcelHandle;
+import com.hwy.uitl.CollectionUitl;
 import com.hwy.uitl.StringUtil;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
+ * 数据封装处理类
  * @author huangweiyu
  * @date 2018/3/13 11:39
  **/
@@ -23,16 +29,20 @@ public class DataAssembleHandle implements ExcelHandle {
 
     @Override
     public void handle() {
+        //封装表头
         assembleHeaders();
+        //封装数据
         assembleDatas();
     }
 
     private void assembleHeaders() {
+        //计算表头所占的行列
         RowCol rowCol = calHeadersRowCol();
+        //将表头转换成二维矩阵数组
         ExcelHeader[][] origins = getOriginHeaders(rowCol);
         //行列转换
         rowCol.rowColConvert();
-        //矩阵行列转换
+        //矩阵行列转换，转换成excel中真正要生成的表头
         ExcelHeader[][] news = getNewHeaders(rowCol, origins);
         //合并
         merge(rowCol, news);
@@ -42,6 +52,12 @@ public class DataAssembleHandle implements ExcelHandle {
         result.setHeaders(news);
     }
 
+    /**
+     * 源表头矩阵转换成新表头矩阵
+     * @param rowCol 行列
+     * @param origins 源表头
+     * @return
+     */
     private ExcelHeader[][] getNewHeaders(RowCol rowCol, ExcelHeader[][] origins) {
         int row = rowCol.getRow();
         int col = rowCol.getCol();
@@ -55,6 +71,11 @@ public class DataAssembleHandle implements ExcelHandle {
         return news;
     }
 
+    /**
+     * 获取源表头二维矩阵
+     * @param rowCol 行列
+     * @return
+     */
     private ExcelHeader[][] getOriginHeaders(RowCol rowCol) {
         List<ExcelOriginHeader> originHeaders = param.getOriginHeaders();
         int row = rowCol.getRow();
@@ -69,12 +90,16 @@ public class DataAssembleHandle implements ExcelHandle {
         return origins;
     }
 
+    /**
+     * 计算表头所占的最大的行和列
+     * @return
+     */
     private RowCol calHeadersRowCol() {
         List<ExcelOriginHeader> originHeaders = param.getOriginHeaders();
         int row = originHeaders.size();
         int col = 1;
         for (ExcelOriginHeader originHeader : originHeaders) {
-            int size = originHeader.getName().size();
+            int size = originHeader.getNameList().size();
             if (size > col) {
                 col = size;
             }
@@ -82,11 +107,23 @@ public class DataAssembleHandle implements ExcelHandle {
         return new RowCol(row, col);
     }
 
+    /**
+     * 合并表头
+     * @param rowCol 行列
+     * @param headers 表头矩阵
+     */
     private void merge(RowCol rowCol, ExcelHeader[][] headers) {
+        //合并每一行中，相同名称所占的列数
         mergeRow(rowCol, headers);
+        //合并每一列中，名称所占的行数
         mergeCol(rowCol, headers);
     }
 
+    /**
+     * 合并每一行中，相同名称所占的列数
+     * @param rowCol 行列
+     * @param headers 表头矩阵
+     */
     private void mergeRow(RowCol rowCol, ExcelHeader[][] headers) {
         Set<String> nameSet;
         Map<String, Integer> count;
@@ -115,6 +152,13 @@ public class DataAssembleHandle implements ExcelHandle {
         }
     }
 
+    /**
+     * 获取垂直方向名称，用"|"连接
+     * @param row 行
+     * @param col 列
+     * @param headers 表头二维矩阵
+     * @return
+     */
     private String getVerticalName(int row, int col, ExcelHeader[][] headers) {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i <= row; i++) {
@@ -123,6 +167,11 @@ public class DataAssembleHandle implements ExcelHandle {
         return buf.substring(1);
     }
 
+    /**
+     * 合并每一列中，名称所占的行数
+     * @param rowCol 行列
+     * @param headers 表头矩阵
+     */
     private void mergeCol(RowCol rowCol, ExcelHeader[][] headers) {
         int row = rowCol.getRow();
         int col = rowCol.getCol();
@@ -138,6 +187,11 @@ public class DataAssembleHandle implements ExcelHandle {
         }
     }
 
+    /**
+     * 设置表头单元的可用标记
+     * @param rowCol 行列
+     * @param headers 表头二维矩阵
+     */
     private void setAvailableHeaders(RowCol rowCol, ExcelHeader[][] headers) {
         int row = rowCol.getRow();
         int col = rowCol.getCol();
@@ -148,6 +202,7 @@ public class DataAssembleHandle implements ExcelHandle {
                     if (preIndex >= 0
                             && !isHeaderEmpty(headers[i][preIndex])
                             && !isHeaderEmpty(headers[i][j])) {
+                        //同一行中，如果当前单元和前一个单元名称相同，则当前单元要设置成不可用
                         String preVerticalName = getVerticalName(i, preIndex, headers);
                         String curVerticalName = getVerticalName(i, j, headers);
                         headers[i][j].setAvailable(!preVerticalName.equals(curVerticalName));
@@ -157,37 +212,96 @@ public class DataAssembleHandle implements ExcelHandle {
         }
     }
 
+    /**
+     * 根据下标获取源表头单元
+     * @param index 下标
+     * @param originHeader 源表头
+     * @return
+     */
     private ExcelHeader getExcelHeader(int index, ExcelOriginHeader originHeader) {
-        int len = originHeader.getName().size();
-        String name = len > index ? originHeader.getName().get(index) : null;
+        int len = originHeader.getNameList().size();
+        String name = len > index ? originHeader.getNameList().get(index) : null;
         return new ExcelHeader(name);
     }
 
+    /**
+     * 表头单元是否为空
+     * @param excelHeader 表头单元
+     * @return
+     */
     private boolean isHeaderEmpty(ExcelHeader excelHeader) {
         return null == excelHeader || StringUtil.isEmpty(excelHeader.getName());
     }
 
+    /**
+     * 封装数据
+     */
     private void assembleDatas() {
-        Map<String, Integer> headerMap = getHeaderIndexMap();
-        Map<String, String> fieldMap = param.getFieldMap();
-
+        List<? extends BaseExcelData> originDatas = param.getOriginDatas();
+        List<List<String>> datas = new ArrayList<>();
+        RowCol rowCol = result.getHeaderRowCol();
+        if (!CollectionUitl.isListEmpty(originDatas)) {
+            Map<Field, Integer> fieldSortMap = param.getFieldSortMap();
+            for (BaseExcelData originData : originDatas) {
+                List<String> data = new ArrayList<>(Collections.nCopies(rowCol.getCol(), StringUtil.EMPTY_STRING));
+                if (null != originData) {
+                    for (Field field : fieldSortMap.keySet()) {
+                        Object value = getFieldValue(field, originData);
+                        if (null != value) {
+                            data.set(fieldSortMap.get(field), String.valueOf(value));
+                        }
+                    }
+                }
+                datas.add(data);
+            }
+        }
+        result.setDatas(datas);
     }
 
-    private Map<String, Integer> getHeaderIndexMap() {
-        Map<String, Integer> headerMap = new HashMap<>();
-        List<ExcelOriginHeader> originHeaders = param.getOriginHeaders();
-        int len = originHeaders.size();
-        for (int i = 0; i < len; i++) {
-            headerMap.put(join(originHeaders.get(i).getName()), i);
+    /**
+     * 反射获取属性对应的值
+     * @param field 类属性
+     * @param obj 类实体
+     * @return
+     */
+    private Object getFieldValue(Field field, Object obj) {
+        try {
+            return getMethod(field, obj).invoke(obj);
+        } catch (IllegalAccessException
+                | InvocationTargetException
+                | NoSuchMethodException e) {
+            e.printStackTrace();
         }
-        return headerMap;
+        return null;
     }
 
-    private String join(List<String> list) {
-        StringBuilder buf = new StringBuilder();
-        for (String s : list) {
-            buf.append("|").append(s);
+    /**
+     * 获取类方法
+     * @param field 类属性
+     * @param obj 当前实体类
+     * @return
+     * @throws NoSuchMethodException
+     */
+    private Method getMethod(Field field, Object obj) throws NoSuchMethodException {
+        Header header = field.getAnnotation(Header.class);
+        return obj.getClass().getMethod(
+                StringUtil.isEmpty(header.method())
+                        ? getDefaultMethodName(field)
+                        : header.method());
+    }
+
+    /**
+     * 获取类属性对应的get方法
+     * @param field 类属性
+     * @return
+     */
+    private String getDefaultMethodName(Field field) {
+        String name = field.getName();
+        final String PRE = "get";
+        String result = StringUtil.join(PRE, name.substring(0, 1).toUpperCase());
+        if (name.length() > 1) {
+            result = StringUtil.join(result, name.substring(1));
         }
-        return buf.substring(1);
+        return result;
     }
 }

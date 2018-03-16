@@ -17,10 +17,10 @@ import java.util.List;
  * @date 2018/3/13 10:19
  **/
 public class ExcelTest {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         try (FileOutputStream out = new FileOutputStream("D:/test.xls")) {
             ExcelExportService excelService = new ExcelExportServiceImpl();
-            ExcelResult result = excelService.export(TestData.class, null);
+            ExcelResult result = excelService.export(TestData.class, getTestDatas());
             printHeaders(result.getHeaderRowCol(), result.getHeaders());
             result.getWorkbook().write(out);
         } catch (IOException e) {
@@ -39,7 +39,7 @@ public class ExcelTest {
         }
     }
 
-    private List<TestData> getTestDatas() {
+    private static List<TestData> getTestDatas() {
         List<TestData> result = new ArrayList<>(2);
         TestData data = new TestData(
                 "语文value1",

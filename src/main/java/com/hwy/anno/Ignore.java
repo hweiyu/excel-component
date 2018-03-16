@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 标记类属性是否用做excel表数据
  * @author huangweiyu
  * @date 2018/3/13 13:51
  **/

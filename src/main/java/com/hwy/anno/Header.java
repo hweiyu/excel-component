@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 类属性，用做excel表头标记
  * @author huangweiyu
  * @date 2018/3/13 10:23
  **/
@@ -18,4 +19,5 @@ public @interface Header {
     int sort() default 0;
 
     String method() default "";
+
 }

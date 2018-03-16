@@ -1,13 +1,20 @@
 package com.hwy.model;
 
 /**
+ * 行列实体
  * @author huangweiyu
  * @date 2018/3/14 11:31
  **/
 public class RowCol {
 
+    /**
+     * 行
+     */
     private int row;
 
+    /**
+     * 列
+     */
     private int col;
 
     public RowCol(int row, int col) {
@@ -15,6 +22,7 @@ public class RowCol {
         this.col = col;
     }
 
+    //行列转换
     public void rowColConvert() {
         int t = getRow();
         setRow(getCol());

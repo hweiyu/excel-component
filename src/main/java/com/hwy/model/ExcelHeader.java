@@ -1,13 +1,30 @@
 package com.hwy.model;
 
 /**
+ * excel表头实体
  * @author huangweiyu
  * @date 2018/3/13 15:04
  **/
 public class ExcelHeader {
+
+    /**
+     * 名称
+     */
     private String name;
+
+    /**
+     * 占列数
+     */
     private int col;
+
+    /**
+     * 占行数
+     */
     private int row;
+
+    /**
+     * 是否可用
+     */
     private boolean available;
 
     public ExcelHeader() {

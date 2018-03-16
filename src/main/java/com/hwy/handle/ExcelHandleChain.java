@@ -6,20 +6,29 @@ import com.hwy.handle.impl.WorkbookCreateHandle;
 import com.hwy.model.ExcelParam;
 import com.hwy.model.ExcelResult;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * excel处理链
  * @author huangweiyu
  * @date 2018/3/13 10:31
  **/
 public class ExcelHandleChain {
 
+    /**
+     * 处理类列表
+     */
     private List<ExcelHandle> handles = new LinkedList<ExcelHandle>();
 
+    /**
+     * 传入参数
+     */
     private ExcelParam param;
 
+    /**
+     * 返回结果
+     */
     private ExcelResult result;
 
     public ExcelHandleChain(ExcelParam param, ExcelResult result) {
